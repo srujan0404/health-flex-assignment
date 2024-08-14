@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react";
+import useStore from "./store/useStore";
+import CommentForm from "./Forms/CommentForm";
+import CommentList from "./Components/CommentList";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const {
+    comments,
+    replies,
+    addComment,
+    editComment,
+    deleteComment,
+    addReply,
+    editReply,
+    deleteReply,
+  } = useStore();
+
+  const handleEdit = (id, newText) => {
+    const isComment = comments.some((comment) => comment.id === id);
+    isComment ? editComment(id, newText) : editReply(id, newText);
+  };
+
+  const handleDelete = (id) => {
+    const isComment = comments.some((comment) => comment.id === id);
+    if (isComment) {
+      deleteComment(id);
+      deleteAssociatedReplies(id);
+    } else {
+      deleteReply(id);
+    }
+  };
+
+  const deleteAssociatedReplies = (commentId) => {
+    replies
+      .filter((reply) => reply.parentId === commentId)
+      .forEach((reply) => deleteReply(reply.id));
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+  
+    <div className="max-w-[600px] mx-auto bg-white p-4 rounded-lg shadow-md text-center">
+      <h1 className="text-2xl font-bold mb-4">Comments</h1>
+      <CommentForm
+        className="bg-gray-100 p-4 rounded-lg shadow-md"
+      onSubmit={addComment} />
+      <CommentList
+        className="bg-gray-100 p-4 rounded-lg shadow-md"
+        comments={comments}
+        replies={replies}
+        onReply={addReply}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+    </div>
+  );
+};
 
-export default App
+export default App;
